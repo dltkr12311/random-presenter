@@ -17,15 +17,15 @@ export async function POST(request: Request) {
     const fileExt = file.name.split('.').pop();
     const fileName = `${uuidv4()}.${fileExt}`;
 
-    const { data, error } = await supabaseAdmin.storage
+    const { error: uploadError } = await supabaseAdmin.storage
       .from('avatars')
       .upload(fileName, buffer, {
         contentType: file.type,
       });
 
-    if (error) {
-      console.error('Supabase storage error:', error);
-      return NextResponse.json({ error: error.message }, { status: 500 });
+    if (uploadError) {
+      console.error('Supabase storage error:', uploadError);
+      return NextResponse.json({ error: uploadError.message }, { status: 500 });
     }
 
     const {
