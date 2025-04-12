@@ -2,6 +2,8 @@
 
 발표자 랜덤 선택 애플리케이션입니다. 팀원들의 발표 순서를 공정하게 선정하고 관리할 수 있습니다.
 
+[Live Demo](your-vercel-url) // 배포 후 URL 추가 예정
+
 ## 사용 방법
 
 ### 1. 사용자 등록
@@ -45,7 +47,7 @@
 
 ### Frontend
 
-- Next.js 14 (App Router)
+- Next.js
 - TypeScript
 - Tailwind CSS
 - Shadcn UI
@@ -63,6 +65,27 @@
 ### 배포
 
 - Vercel (예정)
+
+### 데이터베이스 설정
+
+1. Supabase 프로젝트에서 다음 설정 확인:
+
+   - Database: PostgreSQL 연결 활성화
+   - Storage: 'avatars' 버킷이 public으로 설정
+   - API: CORS 설정이 배포 도메인 허용
+
+2. 프로덕션 환경 마이그레이션:
+
+```bash
+npx prisma db push
+```
+
+### 배포 후 확인사항
+
+- [ ] 환경 변수가 올바르게 설정되었는지 확인
+- [ ] 이미지 업로드가 정상적으로 작동하는지 테스트
+- [ ] 데이터베이스 연결 확인
+- [ ] CORS 설정 확인
 
 ## 설치 및 실행
 
