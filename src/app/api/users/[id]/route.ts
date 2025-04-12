@@ -1,20 +1,29 @@
 import { prisma } from '@/lib/prisma';
 import { NextRequest } from 'next/server';
 
-export async function DELETE(
-  request: NextRequest,
-  context: { params: { id: string } }
-) {
+type RouteContext = {
+  params: { id: string };
+};
+
+export async function DELETE(_request: NextRequest, { params }: RouteContext) {
   try {
     await prisma.user.delete({
       where: {
-        id: context.params.id,
+        id: params.id,
       },
     });
 
-    return Response.json({ message: 'User deleted successfully' });
+    return new Response(
+      JSON.stringify({ message: 'User deleted successfully' }),
+      {
+        headers: { 'Content-Type': 'application/json' },
+      }
+    );
   } catch (error) {
     console.error('Failed to delete user:', error);
-    return Response.json({ error: 'Failed to delete user' }, { status: 500 });
+    return new Response(JSON.stringify({ error: 'Failed to delete user' }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
 }
