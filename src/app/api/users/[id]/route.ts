@@ -2,22 +2,17 @@ import { prisma } from '@/lib/prisma';
 import { NextRequest } from 'next/server';
 
 type RouteContext = {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 };
 
 export async function DELETE(_request: NextRequest, { params }: RouteContext) {
   try {
-    await prisma.user.delete({
-      where: {
-        id: params.id,
-      },
-    });
+    const { id } = await params;
+    await prisma.user.delete({ where: { id } });
 
     return new Response(
       JSON.stringify({ message: 'User deleted successfully' }),
-      {
-        headers: { 'Content-Type': 'application/json' },
-      }
+      { headers: { 'Content-Type': 'application/json' } }
     );
   } catch (error) {
     console.error('Failed to delete user:', error);
