@@ -15,8 +15,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang='ko'>
-      <body className={inter.className}>{children}</body>
+    <html lang='ko' suppressHydrationWarning>
+      <body
+        className={`${inter.className} min-h-screen bg-background`}
+        suppressHydrationWarning
+      >
+        {children}
+      </body>
     </html>
   );
 }
