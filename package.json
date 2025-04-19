@@ -6,7 +6,10 @@
     "dev": "next dev --turbopack",
     "build": "prisma generate && next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:deploy": "prisma migrate deploy",
+    "data:migrate": "ts-node --compiler-options '{\"module\":\"CommonJS\"}' prisma/migrations/migrate-users-to-items.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.6.0",
@@ -39,6 +42,7 @@
     "postcss": "^8.5.3",
     "prisma": "^6.6.0",
     "tailwindcss": "^3.4.17",
+    "ts-node": "^10.9.2",
     "typescript": "^5"
   }
 }
