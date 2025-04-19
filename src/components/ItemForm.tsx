@@ -1,6 +1,8 @@
 import { Category } from '@/types';
 import { motion } from 'framer-motion';
+import { Upload, X } from 'lucide-react';
 import Image from 'next/image';
+import { useEffect, useRef, useState } from 'react';
 
 interface ItemFormProps {
   category: Category;
@@ -31,6 +33,67 @@ export default function ItemForm({
   onAddItem,
   onAddBulkItems,
 }: ItemFormProps) {
+  const [isDragging, setIsDragging] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const nameInputRef = useRef<HTMLInputElement>(null);
+
+  // 개별 모드로 전환 시 이름 입력 필드에 자동 포커스
+  useEffect(() => {
+    if (!isBulkMode && nameInputRef.current) {
+      nameInputRef.current.focus();
+    }
+  }, [isBulkMode]);
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = () => {
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      const file = e.dataTransfer.files[0];
+      if (file.type.startsWith('image/')) {
+        // 파일 입력 필드에 파일 설정
+        if (fileInputRef.current) {
+          // 파일 입력에 드롭된 파일 할당을 위한 DataTransfer 객체 생성
+          const dataTransfer = new DataTransfer();
+          dataTransfer.items.add(file);
+          fileInputRef.current.files = dataTransfer.files;
+
+          // 변경 이벤트 수동 트리거
+          const event = new Event('change', { bubbles: true });
+          fileInputRef.current.dispatchEvent(event);
+
+          // onImageChange 호출
+          onImageChange({
+            target: { files: dataTransfer.files },
+          } as unknown as React.ChangeEvent<HTMLInputElement>);
+        }
+      }
+    }
+  };
+
+  const handleImageBrowseClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleClearImage = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+      // 이미지 미리보기 지우기 위한 빈 이벤트 전달
+      onImageChange({
+        target: { files: null },
+      } as unknown as React.ChangeEvent<HTMLInputElement>);
+    }
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -76,44 +139,80 @@ export default function ItemForm({
           </div>
         </form>
       ) : (
-        // 개별 추가 모드
+        // 개별 추가 모드 - 개선된 UI
         <form onSubmit={onAddItem} className='space-y-4'>
-          <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
-            <div>
-              <label className='block mb-2 text-white'>이름</label>
-              <input
-                type='text'
-                placeholder={`${category.name} 이름`}
-                value={newItemName}
-                onChange={e => setNewItemName(e.target.value)}
-                className='w-full px-4 py-2 text-white border rounded-lg bg-white/10 placeholder-white/60 border-white/20 focus:outline-none focus:ring-2 focus:ring-white/40'
-                required
-              />
-            </div>
-            <div>
-              <label className='block mb-2 text-white'>이미지 (선택사항)</label>
-              <input
-                type='file'
-                accept='image/*'
-                onChange={onImageChange}
-                className='w-full px-4 py-2 text-white border rounded-lg bg-white/10 border-white/20 focus:outline-none focus:ring-2 focus:ring-white/40 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-purple-600 file:text-white hover:file:bg-purple-500'
-              />
-            </div>
+          <div>
+            <label className='block mb-2 text-white'>이름</label>
+            <input
+              type='text'
+              placeholder={`${category.name} 이름`}
+              value={newItemName}
+              onChange={e => setNewItemName(e.target.value)}
+              ref={nameInputRef}
+              className='w-full px-4 py-2 text-white border rounded-lg bg-white/10 placeholder-white/60 border-white/20 focus:outline-none focus:ring-2 focus:ring-white/40'
+              required
+            />
           </div>
 
-          {imagePreview && (
-            <div className='flex justify-center'>
-              <div className='relative w-32 h-32 overflow-hidden border-2 rounded-lg border-white/40'>
-                <Image
-                  src={imagePreview}
-                  alt='Preview'
-                  fill
-                  sizes='128px'
-                  className='object-cover'
-                />
-              </div>
+          <div>
+            <label className='block mb-2 text-white'>이미지 (선택사항)</label>
+            <div
+              className={`w-full border-2 border-dashed rounded-lg p-4 transition-colors ${
+                isDragging
+                  ? 'border-purple-400 bg-purple-500/10'
+                  : 'border-white/20 bg-white/5'
+              }`}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+            >
+              {!imagePreview ? (
+                <div className='flex flex-col items-center justify-center py-4 text-center'>
+                  <Upload className='w-12 h-12 mb-2 text-white/70' />
+                  <p className='mb-2 text-sm text-white/70'>
+                    이미지 파일을 드래그 앤 드롭 또는
+                  </p>
+                  <button
+                    type='button'
+                    onClick={handleImageBrowseClick}
+                    className='px-4 py-2 text-sm text-white transition-colors rounded-lg bg-purple-500/50 hover:bg-purple-500'
+                  >
+                    파일 선택
+                  </button>
+                  <input
+                    type='file'
+                    accept='image/*'
+                    onChange={onImageChange}
+                    ref={fileInputRef}
+                    className='hidden'
+                    aria-label='이미지 업로드'
+                  />
+                </div>
+              ) : (
+                <div className='relative'>
+                  <div className='flex items-center justify-center'>
+                    <div className='relative w-full max-w-xs mx-auto overflow-hidden border-2 rounded-lg aspect-square border-white/40'>
+                      <Image
+                        src={imagePreview}
+                        alt='Preview'
+                        fill
+                        sizes='(max-width: 768px) 100vw, 256px'
+                        className='object-cover'
+                      />
+                      <button
+                        type='button'
+                        onClick={handleClearImage}
+                        className='absolute p-1 text-white transition-colors bg-red-500 rounded-full top-2 right-2 hover:bg-red-600'
+                        aria-label='이미지 삭제'
+                      >
+                        <X className='w-5 h-5' />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
-          )}
+          </div>
 
           <div className='flex justify-center'>
             <button
