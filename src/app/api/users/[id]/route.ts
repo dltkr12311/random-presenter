@@ -1,4 +1,4 @@
-import { prisma } from '@/lib/prisma';
+import { extendedPrisma } from '@/lib/prisma';
 import { NextRequest } from 'next/server';
 
 export async function DELETE(
@@ -7,7 +7,7 @@ export async function DELETE(
 ) {
   try {
     const { id } = await context.params;
-    await prisma.user.delete({ where: { id } });
+    await extendedPrisma.user.delete({ where: { id } });
 
     return new Response(
       JSON.stringify({ message: 'User deleted successfully' }),

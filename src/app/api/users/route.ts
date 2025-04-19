@@ -1,10 +1,10 @@
-import { prisma } from '@/lib/prisma';
+import { extendedPrisma } from '@/lib/prisma';
 import { NextResponse } from 'next/server';
 
 // GET /api/users - 모든 사용자 조회
 export async function GET() {
   try {
-    const users = await prisma.user.findMany({
+    const users = await extendedPrisma.user.findMany({
       orderBy: {
         name: 'asc',
       },
@@ -23,7 +23,7 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const user = await prisma.user.create({
+    const user = await extendedPrisma.user.create({
       data: {
         name: body.name,
         imageUrl: body.imageUrl || '/default-avatar.png',
