@@ -1,4 +1,6 @@
 import { extendedPrisma } from '@/lib/prisma';
+import { CategoryType } from '@/types';
+import { featuresArrayToJson, getDefaultFeatures } from '@/utils/categoryUtils';
 import { NextResponse } from 'next/server';
 
 // GET /api/categories - 모든 카테고리 조회
@@ -29,30 +31,33 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
+    const { name, slug, icon, description, type } = body;
 
-    // slug 생성 - 안전한 URL 생성을 위해 특수문자 제거 및 필터링
-    const slug =
-      body.slug ||
-      body.name
-        .toLowerCase()
-        .trim()
-        // 특수문자를 하이픈이나 빈 문자열로 대체
-        .replace(/[^\w\s-]/g, '') // 알파벳, 숫자, 하이픈, 공백 외 모든 문자 제거
-        .replace(/\s+/g, '-') // 공백을 하이픈으로 변환
-        .replace(/-+/g, '-'); // 연속된 하이픈을 하나로 변환
+    // 카테고리 타입 파악 (지정되지 않으면 기본값으로 GENERAL 사용)
+    const categoryType = type
+      ? Object.values(CategoryType).includes(type as CategoryType)
+        ? (type as CategoryType)
+        : CategoryType.GENERAL
+      : CategoryType.GENERAL;
 
+    // 타입에 따른 기본 기능 설정
+    const defaultFeatures = getDefaultFeatures(categoryType);
+
+    // 카테고리 생성
     const category = await extendedPrisma.category.create({
       data: {
-        name: body.name,
-        slug: slug,
-        icon: body.icon || null,
-        description: body.description || null,
+        name,
+        slug,
+        icon,
+        description,
+        type: categoryType,
+        features: featuresArrayToJson(defaultFeatures),
       },
     });
 
     return NextResponse.json(category, { status: 201 });
   } catch (error) {
-    console.error('Failed to create category:', error);
+    console.error('Error creating category:', error);
     return NextResponse.json(
       { error: 'Failed to create category' },
       { status: 500 }

@@ -4,7 +4,7 @@ import {
   deleteCategory as deleteCategoryModel,
   fetchAllCategories,
   templates,
-} from '@/models/categoryModel';
+} from '@/models';
 import { Category } from '@/types';
 import { useEffect, useState } from 'react';
 

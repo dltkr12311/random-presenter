@@ -1,19 +1,21 @@
 import { extendedPrisma } from '@/lib/prisma';
-import { NextResponse } from 'next/server';
+import { CategoryType } from '@/types';
+import { NextRequest, NextResponse } from 'next/server';
 
-// GET /api/categories/[slug]/items - 카테고리의 모든 아이템 조회
+// GET /api/categories/[slug]/items
 export async function GET(
-  request: Request,
+  request: NextRequest,
   { params }: { params: { slug: string } }
 ) {
   try {
-    // params를 먼저 await 처리
-    const { slug } = await params;
-
-    // 먼저 카테고리 ID 찾기
+    // 카테고리 찾기
     const category = await extendedPrisma.category.findUnique({
-      where: { slug },
-      select: { id: true },
+      where: { slug: params.slug },
+      include: {
+        items: {
+          orderBy: { createdAt: 'desc' },
+        },
+      },
     });
 
     if (!category) {
@@ -23,54 +25,50 @@ export async function GET(
       );
     }
 
-    // 카테고리에 속한 아이템 조회
-    const items = await extendedPrisma.item.findMany({
-      where: { categoryId: category.id },
-      orderBy: {
-        name: 'asc',
-      },
-    });
+    // 카테고리 타입에 따라 추가 데이터 로드
+    let enrichedItems = category.items;
 
-    return NextResponse.json(items);
+    // 음식 카테고리인 경우 FoodEntry 정보도 가져오기
+    if (category.type === CategoryType.FOOD) {
+      // 각 item에 대한 foodEntry 정보 가져오기
+      const itemsWithFoodEntries = await Promise.all(
+        category.items.map(async (item: any) => {
+          const foodEntry = await extendedPrisma.foodEntry.findUnique({
+            where: { itemId: item.id },
+          });
+
+          return {
+            ...item,
+            foodEntry: foodEntry || null,
+          };
+        })
+      );
+
+      enrichedItems = itemsWithFoodEntries;
+    }
+
+    return NextResponse.json(enrichedItems);
   } catch (error) {
-    console.error('Failed to fetch items:', error);
+    console.error('Error retrieving items:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch items' },
+      { error: 'Failed to retrieve items' },
       { status: 500 }
     );
   }
 }
 
-// POST /api/categories/[slug]/items - 카테고리에 새 아이템 추가
+// POST /api/categories/[slug]/items
 export async function POST(
-  request: Request,
+  request: NextRequest,
   { params }: { params: { slug: string } }
 ) {
   try {
-    // params를 먼저 await 처리
-    const { slug } = await params;
+    const body = await request.json();
+    const { name, imageUrl } = body;
 
-    // 요청 본문 파싱 시 오류 처리 강화
-    let body;
-    try {
-      body = await request.json();
-    } catch (error) {
-      console.error('Invalid JSON in request body:', error);
-      return NextResponse.json(
-        { error: 'Invalid JSON format in request body' },
-        { status: 400 }
-      );
-    }
-
-    // 필수 필드 검증
-    if (!body || !body.name) {
-      return NextResponse.json({ error: 'Name is required' }, { status: 400 });
-    }
-
-    // 먼저 카테고리 ID 찾기
+    // 카테고리 찾기
     const category = await extendedPrisma.category.findUnique({
-      where: { slug },
-      select: { id: true },
+      where: { slug: params.slug },
     });
 
     if (!category) {
@@ -80,19 +78,43 @@ export async function POST(
       );
     }
 
-    // 새 아이템 생성
+    // 기본 아이템 생성
     const item = await extendedPrisma.item.create({
       data: {
-        name: body.name,
-        imageUrl: body.imageUrl || '/default-avatar.png',
+        name,
+        imageUrl: imageUrl || '/default-avatar.png',
         categoryId: category.id,
-        selected: false,
       },
     });
 
-    return NextResponse.json(item, { status: 201 });
+    // 카테고리 타입에 따른 추가 처리
+    if (category.type === CategoryType.FOOD) {
+      // 음식 카테고리인 경우 FoodEntry도 생성
+      const { foodType, priceRange, location, address, rating, tags } = body;
+
+      const foodEntry = await extendedPrisma.foodEntry.create({
+        data: {
+          itemId: item.id,
+          categoryId: category.id,
+          foodType,
+          priceRange,
+          location,
+          address,
+          rating,
+          tags: tags || [],
+        },
+      });
+
+      // FoodEntry 정보를 포함하여 반환
+      return NextResponse.json({
+        ...item,
+        foodEntry,
+      });
+    }
+
+    return NextResponse.json(item);
   } catch (error) {
-    console.error('Failed to create item:', error);
+    console.error('Error creating item:', error);
     return NextResponse.json(
       { error: 'Failed to create item' },
       { status: 500 }

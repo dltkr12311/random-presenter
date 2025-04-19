@@ -28,7 +28,15 @@ export const fetchCategoryItems = async (
 export const addItem = async (
   categorySlug: string,
   name: string,
-  imageUrl: string = '/default-avatar.png'
+  imageUrl: string = '/default-avatar.png',
+  foodDetails?: {
+    foodType?: string;
+    priceRange?: string;
+    location?: string;
+    address?: string;
+    rating?: number;
+    tags?: string[];
+  }
 ): Promise<Item | null> => {
   try {
     const encodedSlug = encodeURIComponent(categorySlug);
@@ -38,6 +46,7 @@ export const addItem = async (
       body: JSON.stringify({
         name,
         imageUrl,
+        ...foodDetails, // 음식 세부 정보가 있는 경우 추가
       }),
     });
 

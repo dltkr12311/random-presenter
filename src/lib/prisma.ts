@@ -5,6 +5,7 @@ export type ExtendedPrismaClient = PrismaClient & {
   category: any;
   item: any;
   cycle: any;
+  foodEntry: any;
   user: any; // 기존 모델도 포함
 };
 

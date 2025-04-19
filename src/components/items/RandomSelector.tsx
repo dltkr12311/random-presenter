@@ -1,28 +1,82 @@
 import { Category, Item } from '@/types';
 import { AnimatePresence, motion } from 'framer-motion';
 import Image from 'next/image';
+import { useEffect, useState } from 'react';
 
 interface RandomSelectorProps {
   category: Category;
   items: Item[];
-  selectedItem: Item | null;
-  isSpinning: boolean;
-  totalItems: number;
-  selectedCount: number;
-  onSelectRandom: () => void;
-  onShareResult: () => void;
+  onSelectRandom: () => Promise<void>;
 }
 
 export default function RandomSelector({
   category,
   items,
-  selectedItem,
-  isSpinning,
-  totalItems,
-  selectedCount,
   onSelectRandom,
-  onShareResult,
 }: RandomSelectorProps) {
+  const [selectedItem, setSelectedItem] = useState<Item | null>(null);
+  const [isSpinning, setIsSpinning] = useState(false);
+
+  // 현재 선택된 항목 계산
+  const selectedCount = items.filter(item => item.selected).length;
+  const totalItems = items.length;
+
+  // 선택된 항목이 변경되면 업데이트
+  useEffect(() => {
+    if (items.length > 0) {
+      const lastSelected = items.find(
+        item => item.selected && item.lastSelectedAt
+      );
+      if (lastSelected) {
+        setSelectedItem(lastSelected);
+      }
+    }
+  }, [items]);
+
+  // 랜덤 선택 처리
+  const handleSelectRandom = async () => {
+    setIsSpinning(true);
+
+    // 드럼롤 효과
+    const interval = setInterval(() => {
+      if (items.length > 0) {
+        const randomIndex = Math.floor(Math.random() * items.length);
+        setSelectedItem(items[randomIndex]);
+      }
+    }, 100);
+
+    // 실제 선택 실행
+    await onSelectRandom();
+
+    // 드럼롤 종료
+    setTimeout(() => {
+      clearInterval(interval);
+      setIsSpinning(false);
+    }, 2000);
+  };
+
+  // 결과 공유
+  const handleShareResult = () => {
+    if (!selectedItem) return;
+
+    if (navigator.share) {
+      navigator
+        .share({
+          title: `랜덤 ${category.name} 선택 결과`,
+          text: `오늘의 ${category.name}: ${selectedItem.name}`,
+        })
+        .catch(err => {
+          console.error('공유 실패:', err);
+        });
+    } else {
+      // 클립보드 복사 대체
+      navigator.clipboard.writeText(
+        `오늘의 ${category.name}: ${selectedItem.name}`
+      );
+      alert('클립보드에 복사되었습니다!');
+    }
+  };
+
   return (
     <motion.div
       initial={{ y: -10, opacity: 0 }}
@@ -54,7 +108,7 @@ export default function RandomSelector({
 
       <div className='flex justify-center'>
         <button
-          onClick={onSelectRandom}
+          onClick={handleSelectRandom}
           disabled={isSpinning || items.length === 0}
           className='px-8 py-3 text-lg font-bold text-purple-700 transition-colors bg-white rounded-xl hover:bg-white/90 disabled:opacity-50 disabled:cursor-not-allowed'
         >
@@ -92,7 +146,7 @@ export default function RandomSelector({
             {/* 공유 버튼 추가 */}
             {!isSpinning && (
               <button
-                onClick={onShareResult}
+                onClick={handleShareResult}
                 className='flex items-center gap-2 px-4 py-2 mt-4 text-white transition-colors rounded-lg bg-white/30 hover:bg-white/40'
               >
                 <span>공유하기</span>

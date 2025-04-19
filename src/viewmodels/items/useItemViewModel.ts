@@ -78,7 +78,15 @@ export const useItemViewModel = (categorySlug: string | null) => {
   };
 
   // 새 아이템 추가
-  const handleAddItem = async (e: React.FormEvent) => {
+  const handleAddItem = async (
+    e: React.FormEvent,
+    foodDetails?: {
+      foodType?: string;
+      priceRange?: string;
+      location?: string;
+      address?: string;
+    }
+  ) => {
     e.preventDefault();
     if (!newItemName.trim() || !categorySlug) return;
 
@@ -97,7 +105,13 @@ export const useItemViewModel = (categorySlug: string | null) => {
         }
       }
 
-      const newItem = await addItem(categorySlug, newItemName, imageUrl);
+      // 음식 관련 추가 정보가 있는 경우
+      const newItem = await addItem(
+        categorySlug,
+        newItemName,
+        imageUrl,
+        foodDetails
+      );
 
       if (newItem) {
         setNewItemName('');

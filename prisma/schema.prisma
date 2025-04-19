@@ -20,12 +20,21 @@ model Category {
   slug          String    @unique
   icon          String?
   description   String?
+  type          String    // 카테고리 타입 (food, person, activity 등)
+  features      Json?     // 카테고리별 기능 설정을 JSON으로 저장
+  
+  // 관계
   items         Item[]
   cycles        Cycle[]
+  
+  // 확장 모델 관계 (필요한 경우 추가)
+  foodEntries   FoodEntry[]
+  
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 }
 
+// 기본 Item 모델 - 모든 카테고리 공통 필드
 model Item {
   id            String    @id @default(cuid())
   name          String
@@ -34,6 +43,31 @@ model Item {
   categoryId    String
   selected      Boolean   @default(false)
   lastSelectedAt DateTime?
+  metadata      Json?     // 기타 유연한 메타데이터 (필수적이지 않은 일반 속성)
+  
+  // 확장 모델 관계 (필요한 경우 추가)
+  foodEntry     FoodEntry?
+  
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+// 음식 카테고리용 확장 모델
+model FoodEntry {
+  id            String    @id @default(cuid())
+  item          Item      @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  itemId        String    @unique
+  category      Category  @relation(fields: [categoryId], references: [id])
+  categoryId    String
+  
+  // 음식 특화 필드
+  foodType      String?   // 음식 종류 (한식, 중식, 일식 등)
+  priceRange    String?   // 가격대 (저렴, 보통, 비싼)
+  location      String?   // 위치 정보
+  address       String?   // 주소
+  rating        Float?    // 평점
+  tags          String[]  // 태그 (매운, 건강한 등)
+  
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 }
