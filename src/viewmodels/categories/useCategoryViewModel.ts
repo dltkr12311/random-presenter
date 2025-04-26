@@ -171,5 +171,6 @@ export const useCategoryViewModel = () => {
     cancelDelete,
     deleteCategory,
     templates,
+    loadCategories,
   };
 };

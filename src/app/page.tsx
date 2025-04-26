@@ -1,15 +1,11 @@
 'use client';
 
+import CategoryDetail from '@/components/categories/CategoryDetail';
 import CategoryList from '@/components/categories/CategoryList';
 import DeleteConfirmModal from '@/components/common/DeleteConfirmModal';
 import HelpContent from '@/components/common/HelpContent';
 import TemplateSelector from '@/components/common/TemplateSelector';
-import UndoNotification from '@/components/common/UndoNotification';
-import ItemForm from '@/components/items/ItemForm';
-import ItemList from '@/components/items/ItemList';
-import RandomSelector from '@/components/items/RandomSelector';
 import { useCategoryViewModel } from '@/viewmodels/categories/useCategoryViewModel';
-import { useItemViewModel } from '@/viewmodels/items/useItemViewModel';
 import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 
@@ -35,30 +31,8 @@ export default function Home() {
     cancelDelete,
     deleteCategory,
     templates,
+    loadCategories,
   } = useCategoryViewModel();
-
-  // 아이템 뷰모델 (선택된 카테고리에 종속)
-  const {
-    items,
-    selectedItem,
-    isSpinning,
-    isUndoVisible,
-    newItemName,
-    setNewItemName,
-    imagePreview,
-    isUploading,
-    bulkItemsText,
-    setBulkItemsText,
-    isBulkMode,
-    setIsBulkMode,
-    handleImageChange,
-    handleAddItem,
-    handleAddBulkItems,
-    deleteItem,
-    undoDelete,
-    selectRandom,
-    shareResult,
-  } = useItemViewModel(selectedCategory?.slug || null);
 
   // 클라이언트 사이드 렌더링 확인
   useEffect(() => {
@@ -70,8 +44,10 @@ export default function Home() {
     return null;
   }
 
-  const selectedCount = items.filter(item => item.selected).length;
-  const totalItems = items.length;
+  const handleCategoryUpdate = () => {
+    // 카테고리 데이터 다시 로드
+    loadCategories();
+  };
 
   return (
     <main className='min-h-screen p-4 bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600'>
@@ -81,7 +57,7 @@ export default function Home() {
           animate={{ y: 0, opacity: 1 }}
           className='mb-8 text-5xl font-bold text-center text-white'
         >
-          랜덤 선택기
+          Select Random
         </motion.h1>
 
         {/* 상단 버튼 영역 */}
@@ -132,43 +108,13 @@ export default function Home() {
           onAddCategory={addCategory}
         />
 
+        {/* 선택된 카테고리의 상세 내용 - 카테고리 타입에 따라 다른 UI 표시 */}
         {selectedCategory && (
-          <>
-            {/* 진행 상황 및 랜덤 선택 */}
-            <RandomSelector
-              category={selectedCategory}
-              items={items}
-              selectedItem={selectedItem}
-              isSpinning={isSpinning}
-              totalItems={totalItems}
-              selectedCount={selectedCount}
-              onSelectRandom={selectRandom}
-              onShareResult={shareResult}
-            />
-
-            {/* 아이템 목록 */}
-            <ItemList items={items} onDeleteItem={deleteItem} />
-
-            {/* 새 아이템 추가 */}
-            <ItemForm
-              category={selectedCategory}
-              newItemName={newItemName}
-              setNewItemName={setNewItemName}
-              imagePreview={imagePreview}
-              isUploading={isUploading}
-              bulkItemsText={bulkItemsText}
-              setBulkItemsText={setBulkItemsText}
-              isBulkMode={isBulkMode}
-              setIsBulkMode={setIsBulkMode}
-              onImageChange={handleImageChange}
-              onAddItem={handleAddItem}
-              onAddBulkItems={handleAddBulkItems}
-            />
-          </>
+          <CategoryDetail
+            category={selectedCategory}
+            onUpdate={handleCategoryUpdate}
+          />
         )}
-
-        {/* 실행 취소 알림 */}
-        <UndoNotification isVisible={isUndoVisible} onUndo={undoDelete} />
 
         {/* 카테고리 삭제 확인 모달 */}
         <DeleteConfirmModal
