@@ -1,15 +1,15 @@
 'use client';
 
-import CategoryList from '@/components/CategoryList';
-import DeleteConfirmModal from '@/components/DeleteConfirmModal';
-import HelpContent from '@/components/HelpContent';
-import ItemForm from '@/components/ItemForm';
-import ItemList from '@/components/ItemList';
-import RandomSelector from '@/components/RandomSelector';
-import TemplateSelector from '@/components/TemplateSelector';
-import UndoNotification from '@/components/UndoNotification';
-import { useCategoryViewModel } from '@/viewmodels/useCategoryViewModel';
-import { useItemViewModel } from '@/viewmodels/useItemViewModel';
+import CategoryList from '@/components/categories/CategoryList';
+import DeleteConfirmModal from '@/components/common/DeleteConfirmModal';
+import HelpContent from '@/components/common/HelpContent';
+import TemplateSelector from '@/components/common/TemplateSelector';
+import UndoNotification from '@/components/common/UndoNotification';
+import ItemForm from '@/components/items/ItemForm';
+import ItemList from '@/components/items/ItemList';
+import RandomSelector from '@/components/items/RandomSelector';
+import { useCategoryViewModel } from '@/viewmodels/categories/useCategoryViewModel';
+import { useItemViewModel } from '@/viewmodels/items/useItemViewModel';
 import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 

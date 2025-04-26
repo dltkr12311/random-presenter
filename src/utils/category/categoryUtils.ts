@@ -1,5 +1,9 @@
 import { CategoryFeature, CategoryType, FeatureType } from '@/types';
 
+// 디버깅을 위한 값 확인
+console.log('CategoryType values:', Object.values(CategoryType));
+console.log('FeatureType values:', Object.values(FeatureType));
+
 /**
  * 카테고리 타입에 따라 기본 기능 설정을 반환
  */
@@ -48,17 +52,39 @@ export function getDefaultFeatures(
  * CategoryFeatures 배열을 JSON으로 변환
  */
 export function featuresArrayToJson(features: CategoryFeature[]): any {
-  return features;
+  try {
+    // Prisma에 저장하기 전에 직렬화 처리
+    return JSON.stringify(features);
+  } catch (error) {
+    console.error('Error converting features to JSON:', error);
+    return JSON.stringify([]);
+  }
 }
 
 /**
  * JSON에서 CategoryFeatures 배열로 변환
  */
 export function jsonToFeaturesArray(json: any): CategoryFeature[] {
-  if (!json) return [];
+  if (!json) {
+    console.log('Empty JSON input for features');
+    return [];
+  }
 
-  // Prisma의 JSON 필드를 파싱
-  const parsed = typeof json === 'string' ? JSON.parse(json) : json;
+  console.log('JSON to convert to features array:', typeof json, json);
 
-  return Array.isArray(parsed) ? parsed : [];
+  try {
+    // Prisma의 JSON 필드를 파싱
+    const parsed = typeof json === 'string' ? JSON.parse(json) : json;
+    console.log('Parsed features:', parsed);
+
+    if (Array.isArray(parsed)) {
+      return parsed;
+    } else {
+      console.log('Parsed result is not an array, returning empty array');
+      return [];
+    }
+  } catch (error) {
+    console.error('Error parsing features JSON:', error);
+    return [];
+  }
 }

@@ -6,7 +6,7 @@ import {
   restoreItem,
   selectRandomItem,
   uploadImage,
-} from '@/models/itemModel';
+} from '@/models';
 import { Item } from '@/types';
 import confetti from 'canvas-confetti';
 import { useEffect, useState } from 'react';

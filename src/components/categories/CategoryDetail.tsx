@@ -1,10 +1,10 @@
 import { Category, CategoryType } from '@/types';
-import { useItemViewModel } from '@/viewmodels/useItemViewModel';
+import { useItemViewModel } from '@/viewmodels/items/useItemViewModel';
 import { useState } from 'react';
-import FoodItemForm from './FoodItemForm';
-import ItemForm from './ItemForm';
-import ItemList from './ItemList';
-import RandomSelector from './RandomSelector';
+import FoodItemForm from '../items/food/FoodItemForm';
+import ItemForm from '../items/ItemForm';
+import ItemList from '../items/ItemList';
+import RandomSelector from '../items/RandomSelector';
 
 interface CategoryDetailProps {
   category: Category;
@@ -143,7 +143,12 @@ export default function CategoryDetail({
         <RandomSelector
           category={category}
           items={items}
+          selectedItem={null}
+          isSpinning={false}
+          totalItems={items.length}
+          selectedCount={items.filter(item => item.selected).length || 0}
           onSelectRandom={setRandomItem}
+          onShareResult={() => {}}
         />
       )}
 

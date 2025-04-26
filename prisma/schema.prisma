@@ -20,7 +20,7 @@ model Category {
   slug          String    @unique
   icon          String?
   description   String?
-  type          String    // 카테고리 타입 (food, person, activity 등)
+  type          String?    // 카테고리 타입 (food, person, activity 등)
   features      Json?     // 카테고리별 기능 설정을 JSON으로 저장
   
   // 관계

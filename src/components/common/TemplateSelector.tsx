@@ -1,9 +1,11 @@
+import { CategoryType } from '@/types';
 import { AnimatePresence, motion } from 'framer-motion';
 
 interface Template {
   name: string;
   icon: string;
   items: string[];
+  type?: CategoryType;
 }
 
 interface TemplateSelectorProps {

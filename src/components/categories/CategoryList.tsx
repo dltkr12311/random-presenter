@@ -44,6 +44,14 @@ export default function CategoryList({
             >
               <span>{category.icon}</span>
               <span>{category.name}</span>
+              {category.type && (
+                <span className='ml-2 text-xs opacity-70'>
+                  {category.type === 'food' && '🍽️'}
+                  {category.type === 'person' && '👨‍💼'}
+                  {category.type === 'activity' && '🎮'}
+                  {category.type === 'general' && '🎲'}
+                </span>
+              )}
             </button>
             <button
               onClick={() => onDeleteCategory(category.slug)}

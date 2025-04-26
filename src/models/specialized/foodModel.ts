@@ -8,6 +8,7 @@ export async function fetchFoodEntry(
   itemId: string
 ): Promise<FoodEntry | null> {
   try {
+    console.log('Fetching food entry for item:', itemId);
     const response = await fetch(`/api/food-entries/${itemId}`);
     const apiResponse = await handleApiResponse<FoodEntry>(response);
 

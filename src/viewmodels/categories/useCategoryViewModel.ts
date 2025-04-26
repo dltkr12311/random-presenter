@@ -5,7 +5,7 @@ import {
   fetchAllCategories,
   templates,
 } from '@/models';
-import { Category } from '@/types';
+import { Category, CategoryType } from '@/types';
 import { useEffect, useState } from 'react';
 
 export const useCategoryViewModel = () => {
@@ -57,9 +57,16 @@ export const useCategoryViewModel = () => {
     setError(null);
 
     try {
+      // 아이콘에 따라 기본 타입 추론
+      let type = CategoryType.GENERAL; // 기본 타입
+      if (newCategoryIcon === '🍽️') type = CategoryType.FOOD;
+      else if (newCategoryIcon === '👨‍💼') type = CategoryType.PERSON;
+      else if (newCategoryIcon === '🎮') type = CategoryType.ACTIVITY;
+
       const newCategory = await createCategory(
         newCategoryName,
-        newCategoryIcon
+        newCategoryIcon,
+        type // 타입 정보 추가
       );
 
       if (newCategory) {
